@@ -1,7 +1,7 @@
 const express = require("express");
 const app = express();
 const router = express.Router();
-const PORT = 8000;
+const PORT = 8080;
 
 router.get("/ping", (req, res) => {
     console.log("Ping health check made on server");
