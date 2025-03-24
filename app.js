@@ -5,11 +5,15 @@ const PORT = 8080;
 
 router.get("/ping", (req, res) => {
     console.log("Ping health check made on server");
-    // res.send({ status: 200, message: "Healthy" });
-    res.status(200).send("Helthy");
+    res.status(200).send("Healthy");
 });
 
 app.use("/api", router);
+
+app.use("/", (req, res) => {
+    console.log("Base path hit");
+    res.send("foo");
+});
 
 app.listen(PORT, () => {
     console.log("===========================================================");
