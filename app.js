@@ -10,7 +10,7 @@ router.get("/ping", (req, res) => {
 
 app.use("/api", router);
 
-app.use("/", (req, res) => {
+app.get("/", (req, res) => {
     console.log("Base path hit");
     res.send("foo");
 });
