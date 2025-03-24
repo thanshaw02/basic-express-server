@@ -5,7 +5,8 @@ const PORT = 8080;
 
 router.get("/ping", (req, res) => {
     console.log("Ping health check made on server");
-    res.send({ status: 200, message: "Healthy" });
+    // res.send({ status: 200, message: "Healthy" });
+    res.status(200).send("Helthy");
 });
 
 app.use("/api", router);
