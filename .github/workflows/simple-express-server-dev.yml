@@ -1,0 +1,87 @@
+# GitHub Actions workflow for deploying a fullstack Docker application to Azure App Service
+#
+# Prerequisites:
+# 1. Azure resources created via Terraform (App Service, ACR, etc.)
+# 2. GitHub secrets configured with values from Terraform outputs
+# 3. Dockerfile in the root of your repository
+#
+# Required GitHub Secrets (get values from `terraform output`):
+#   - ACR_LOGIN_SERVER        (terraform output acr_login_server)
+#   - ACR_USERNAME            (terraform output acr_admin_username)
+#   - ACR_PASSWORD            (terraform output acr_admin_password)
+#   - BACKEND_PUBLISH_PROFILE (terraform output backend_publish_profile)
+#
+# Required GitHub Variables:
+#   - BACKEND_APP_SERVICE_NAME (terraform output app_service_backend_name)
+#   - BACKEND_ACR_REPOSITORY   (default: "backend")
+
+name: Deploy to Azure
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'dev'
+        type: choice
+        options:
+          - dev
+          - staging
+          - prod
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment || 'dev' }}
+
+    outputs:
+      image-tag: ${{ steps.image-tag.outputs.tag }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set image tag
+        id: image-tag
+        run: |
+          # Use short SHA for image tag
+          echo "tag=${{ github.event.inputs.environment || 'dev' }}-$(echo ${{ github.sha }} | cut -c1-7)" >> $GITHUB_OUTPUT
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Azure Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ secrets.ACR_LOGIN_SERVER }}
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ secrets.ACR_LOGIN_SERVER }}/${{ vars.BACKEND_ACR_REPOSITORY }}:${{ steps.image-tag.outputs.tag }}
+            ${{ secrets.ACR_LOGIN_SERVER }}/${{ vars.BACKEND_ACR_REPOSITORY }}:latest
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    environment:
+      name: ${{ github.event.inputs.environment || 'dev' }}
+      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
+
+    steps:
+      - name: Deploy to Azure App Service
+        id: deploy-to-webapp
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ vars.BACKEND_APP_SERVICE_NAME }}
+          publish-profile: ${{ secrets.BACKEND_PUBLISH_PROFILE }}
+          images: ${{ secrets.ACR_LOGIN_SERVER }}/${{ vars.BACKEND_ACR_REPOSITORY }}:${{ needs.build-and-push.outputs.image-tag }}
