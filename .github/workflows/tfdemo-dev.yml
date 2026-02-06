@@ -1,12 +1,3 @@
-# Deploy fullstack Docker app to Azure App Service
-#
-# Note: This is a template. The deploy.sh script generates a customized version
-# with environment-specific secret/variable names (e.g., ACR_LOGIN_SERVER_DEV_DEV)
-#
-# Manual setup (if not using deploy.sh):
-# 1. Copy this file to your project's .github/workflows/ directory
-# 2. Replace secret/variable names with environment suffix (e.g., _DEV, _STAGING, _PROD)
-
 name: Deploy to Azure
 
 on:
