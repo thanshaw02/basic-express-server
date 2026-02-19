@@ -1,13 +1,37 @@
 require('dotenv').config();
 
 const express = require("express");
+const { Pool } = require("pg");
 const app = express();
 const router = express.Router();
+
+const pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: { rejectUnauthorized: false }
+});
 const PORT = process.env.PORT || 8080;
 
 router.get("/ping", (req, res) => {
     console.log("Ping health check made on server");
     res.status(200).send("Healthy");
+});
+
+router.get("/db-test", async (req, res) => {
+    try {
+        const result = await pool.query("SELECT NOW() as current_time, version() as pg_version");
+        res.json({
+            success: true,
+            message: "Database connection successful!",
+            data: result.rows[0]
+        });
+    } catch (err) {
+        console.error("Database connection error:", err.message);
+        res.status(500).json({
+            success: false,
+            message: "Database connection failed",
+            error: err.message
+        });
+    }
 });
 
 app.use("/program", (req, res) => {
