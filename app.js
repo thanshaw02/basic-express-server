@@ -10,6 +10,11 @@ router.get("/ping", (req, res) => {
     res.status(200).send("Healthy");
 });
 
+app.use("/foo", (req, res) => {
+    console.log("Foo hit!");
+    res.send("bar");
+});
+
 app.use("/api", router);
 
 app.get("/", (req, res) => {
