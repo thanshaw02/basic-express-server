@@ -10,6 +10,11 @@ router.get("/ping", (req, res) => {
     res.status(200).send("Healthy");
 });
 
+app.use("/program", (req, res) => {
+    console.log("\nThis is a new endpoint after running my infrastructure script to build all Cloud infra and the pipeline!\n");
+    res.send({ resp: [1, 2, 3] });
+});
+
 app.use("/foo", (req, res) => {
     console.log("Foo hit!");
     res.send("bar");
