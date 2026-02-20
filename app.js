@@ -18,6 +18,7 @@ router.get("/ping", (req, res) => {
 
 router.get("/db-test", async (req, res) => {
     try {
+        console.log("Testing out the DB connection!");
         const result = await pool.query("SELECT NOW() as current_time, version() as pg_version");
         res.json({
             success: true,
