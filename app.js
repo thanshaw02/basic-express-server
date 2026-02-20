@@ -7,7 +7,7 @@ const router = express.Router();
 
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
-    ssl: { rejectUnauthorized: false }
+    // ssl: { rejectUnauthorized: false }
 });
 const PORT = process.env.PORT || 8080;
 
