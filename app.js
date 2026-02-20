@@ -5,10 +5,17 @@ const { Pool } = require("pg");
 const app = express();
 const router = express.Router();
 
+const isRailwayInternal = process.env.DATABASE_URL?.includes('.railway.internal');
+
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
-    // ssl: { rejectUnauthorized: false }
+    ...(isRailwayInternal ? {} : { ssl: { rejectUnauthorized: false } })
 });
+
+// const pool = new Pool({
+//     connectionString: process.env.DATABASE_URL,
+//     ssl: { rejectUnauthorized: false }
+// });
 const PORT = process.env.PORT || 8080;
 
 router.get("/ping", (req, res) => {
