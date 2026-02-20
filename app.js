@@ -5,18 +5,19 @@ const { Pool } = require("pg");
 const app = express();
 const router = express.Router();
 
+// new db pool -- supports testing in azure (requires ssl for db) anf railway (doesn't require db ssl)
 const isRailwayInternal = process.env.DATABASE_URL?.includes('.railway.internal');
-
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
     ...(isRailwayInternal ? {} : { ssl: { rejectUnauthorized: false } })
 });
+const PORT = process.env.PORT || 8080;
 
+// old db pool
 // const pool = new Pool({
 //     connectionString: process.env.DATABASE_URL,
 //     ssl: { rejectUnauthorized: false }
 // });
-const PORT = process.env.PORT || 8080;
 
 router.get("/ping", (req, res) => {
     console.log("Ping health check made on server");
